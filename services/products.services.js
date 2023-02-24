@@ -22,47 +22,94 @@ class ProductServices {
     return fakedProducts;
   }
 
-  create (product) {
-    this.products.push(product);
-    return this.findOne(product.id);
+  async create (product) {
+    return new Promise((resolve, reject) => {
+      try{
+        setTimeout(()=>{
+          this.products.push(product);
+          resolve(this.findOne(product.id));
+        },1000);
+      }catch(e){
+        reject(e.message);
+      }
+    })
   }
 
-  find (size) {
-    let counter = 0
-    const limit = size ? parseInt(size) : 100
-    return this.products.filter(p=>{
-      if(counter < limit) {
-        counter++;
-        return p;
+  async find (size) {
+    return new Promise((resolve, reject)=>{
+      try{
+        setTimeout(()=>{
+          let counter = 0
+          const limit = size ? parseInt(size) : 100
+          const results = this.products.filter(p=>{
+            if(counter < limit) {
+              counter++;
+              return p;
+            }
+          });
+          resolve(results);
+        },2000);
+      }catch(e){
+        reject(e.message)
       }
     });
   }
 
-  findOne (id) {
-    const index = this.products.findIndex(p=>p.id===id);
-    if(index<0) throw new Error('Product not found');
-    return this.products.filter(p => {
-      if(id === p.id) return p;
-    })
-  }
-
-  update (product) {
-    this.products.map(p=>{
-      if(p.id === product.id){
-        p.name = product.name ? product.name : p.name;
-        p.price = product.price ? product.price : p.price;
-        p.image = product.image ? product.image : p.image;
+  async findOne (id) {
+    return new Promise((resolve, reject)=>{
+      try{
+        const index = this.products.findIndex(p=>p.id===id);
+        if(index<0) reject('Not Found');
+        setTimeout(()=>{
+          const result = this.products.filter(p => {
+            if(id === p.id) return p;
+          })
+          resolve(result);
+        },1000);
+      }catch(e){
+        reject(e.message);
       }
     })
-    return this.products.filter(p=>{
-      if(p.id === product.id) return p;
+  }
+
+  async update (product) {
+    return new Promise((resolve, reject)=>{
+      try{
+        const index = this.products.findIndex(p=>p.id===product.id);
+        if(index < 0) reject('Not Found');
+        setTimeout(()=>{
+          this.products.map(p=>{
+            if(p.id === product.id){
+              p.name = product.name ? product.name : p.name;
+              p.price = product.price ? product.price : p.price;
+              p.image = product.image ? product.image : p.image;
+            }
+          })
+          resolve(this.products.filter(p=>{
+            if(p.id === product.id) return p;
+          }));
+        },1000);
+      }catch(e){
+        reject(e.message)
+      }
     })
   }
 
-  delete (product) {
-    const productIndex = this.products.findIndex(p=>p.id===product.id);
-    this.products = this.products.splice(productIndex, 1);
+  async delete (id) {
+    return new Promise((resolve, reject)=>{
+      try{
+        const index = this.products.findIndex(p=>p.id===id);
+        if(index < 0) reject('Not Found');
+        setTimeout(()=>{
+          this.products = this.products.splice(index, 1);
+          resolve('Product deleted successfully');
+        },1000);
+      }catch(e){
+        reject(e.message)
+      }
+    })
   }
+
 }
 
 module.exports = ProductServices;
