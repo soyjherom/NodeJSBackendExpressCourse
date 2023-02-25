@@ -1,53 +1,45 @@
 const express = require('express');
-const ProductsService = require('../services/products.services.js')
+const ProductsService = require('../services/products.services.js');
 
 const productsRouter = express.Router();
 const productsService = new ProductsService();
 
-productsRouter.get('/',async (req, res)=>{
+productsRouter.get('/',async (req, res, next)=>{
   const { size } = req.query;
   await productsService.find(size)
   .then(results=>res.status(200).json(results))
-  .catch(errorMessage => {
-    const statusCode = errorMessage === 'Not Found' ? 404 : 500;
-    res.status(statusCode).json({
-      message: errorMessage
-    });
+  .catch(eMessage => {
+    next(eMessage)
   });
 })
 
-productsRouter.get('/:id', async (req, res)=>{
+productsRouter.get('/:id', async (req, res, next)=>{
   const { id } = req.params;
   await productsService.findOne(id)
   .then(result => res.status(200).json(result))
   .catch(eMessage => {
-    const statusCode = eMessage === 'Not Found' ? 404 : 500;
-    res.status(statusCode).json({
-      message: eMessage
-    })
+    next(eMessage)
   });
 })
 
-productsRouter.post('/', async (req, res)=>{
+productsRouter.post('/', async (req, res, next)=>{
   const body = req.body;
   await productsService.create(body)
   .then(result=>res.status(201).json(result))
-  .catch(eMessage=>{
-    res.status(500).json({
-      message: eMessage
-    });
+  .catch(eMessage => {
+    next(eMessage)
   });
 })
 
-productsRouter.put('/:id', async (req, res) => {
-  await update(req, res);
+productsRouter.put('/:id', async (req, res, next) => {
+  await update(req, res, next);
 })
 
-productsRouter.patch('/:id', async (req, res)=>{
-  await update(req, res);
+productsRouter.patch('/:id', async (req, res, next)=>{
+  await update(req, res, next);
 })
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { id } = req.params;
   const { name, price, image } = req.body;
   const toChange = {
@@ -58,23 +50,17 @@ const update = async (req, res) => {
   };
   await productsService.update(toChange)
   .then(result=>res.status(202).json(result))
-  .catch(eMessage=>{
-    const statusCode = eMessage === 'Not Found' ? 404 : 500;
-    res.status(statusCode).json({
-      message: eMessage
-    })
+  .catch(eMessage => {
+    next(eMessage)
   });
 }
 
-productsRouter.delete('/:id', async (req, res)=>{
+productsRouter.delete('/:id', async (req, res, next)=>{
   const { id } = req.params;
   await productsService.delete(id)
   .then(message=>res.status(200).json(message))
-  .catch(eMessage=>{
-    const statusCode = eMessage === 'Not Found' ? 404 : 500;
-    res.status(statusCode).json({
-      message: eMessage
-    })
+  .catch(eMessage => {
+    next(eMessage)
   });
 })
 

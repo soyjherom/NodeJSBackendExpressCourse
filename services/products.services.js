@@ -1,4 +1,5 @@
 const fakerJs = require('@faker-js/faker');
+const boom = require('@hapi/boom');
 const { v4 } = require('uuid');
 const uuidv4 = v4;
 
@@ -17,6 +18,7 @@ class ProductServices {
         name: fakerJs.faker.commerce.product(),
         price: parseInt(fakerJs.faker.commerce.price(), 10),
         image: fakerJs.faker.image.imageUrl(),
+        isBlocked: fakerJs.faker.datatype.boolean(),
       });
     }
     return fakedProducts;
@@ -30,7 +32,7 @@ class ProductServices {
           resolve(this.findOne(product.id));
         },1000);
       }catch(e){
-        reject(e.message);
+        reject(e);
       }
     })
   }
@@ -50,7 +52,7 @@ class ProductServices {
           resolve(results);
         },2000);
       }catch(e){
-        reject(e.message)
+        reject(e)
       }
     });
   }
@@ -58,16 +60,18 @@ class ProductServices {
   async findOne (id) {
     return new Promise((resolve, reject)=>{
       try{
-        const index = this.products.findIndex(p=>p.id===id);
-        if(index<0) reject('Not Found');
         setTimeout(()=>{
           const result = this.products.filter(p => {
             if(id === p.id) return p;
           })
-          resolve(result);
+          if(result.length===0)
+            reject(boom.notFound('Product not found'));
+          else if(result[0].isBlocked)
+            reject(boom.conflict("The product is blocked"));
+          else resolve(result[0]);
         },1000);
       }catch(e){
-        reject(e.message);
+        reject(e);
       }
     })
   }
@@ -75,9 +79,9 @@ class ProductServices {
   async update (product) {
     return new Promise((resolve, reject)=>{
       try{
-        const index = this.products.findIndex(p=>p.id===product.id);
-        if(index < 0) reject('Not Found');
         setTimeout(()=>{
+          const index = this.products.findIndex(p=>p.id===product.id);
+          if(index < 0) reject(boom.notFound('Product not found'));
           this.products.map(p=>{
             if(p.id === product.id){
               p.name = product.name ? product.name : p.name;
@@ -90,7 +94,7 @@ class ProductServices {
           }));
         },1000);
       }catch(e){
-        reject(e.message)
+        reject(e)
       }
     })
   }
@@ -98,14 +102,14 @@ class ProductServices {
   async delete (id) {
     return new Promise((resolve, reject)=>{
       try{
-        const index = this.products.findIndex(p=>p.id===id);
-        if(index < 0) reject('Not Found');
         setTimeout(()=>{
+          const index = this.products.findIndex(p=>p.id===id);
+          if(index < 0) reject(boom.notFound('Product not found'));
           this.products = this.products.splice(index, 1);
           resolve('Product deleted successfully');
         },1000);
       }catch(e){
-        reject(e.message)
+        reject(e)
       }
     })
   }
