@@ -20,9 +20,9 @@ const options = {
 app.use(cors(options));
 
 app.get('/',(req, res)=>{
-  res.writeHead(200,{'Content-Type':'html'})
-  res.write('<div>Hello World</div>')
-  res.end()
+  res.json({
+    message: "Hello World!"
+  })
 })
 
 routersApi(app)
